@@ -1,0 +1,75 @@
+apply plugin: 'groovy'
+apply plugin: 'maven'
+apply plugin: "com.gradle.plugin-publish"
+def myGroupId = "com.wangzhi.plugin"
+def myArtifactId = "publishApp"
+def myVersion = "1.0.1"
+def myApplyId = "com.wangzhi.plugin.publishApp"
+def myDescription = "一键发布应用"
+def myDisplayName = 'PublishApp plugin'
+def mytags = ['publish']
+
+dependencies {
+    implementation gradleApi()
+    implementation localGroovy()
+    //这里根据插件需要，添加对应的依赖
+    implementation 'com.android.tools.build:gradle:3.0.0'
+    implementation 'org.javassist:javassist:3.20.0-GA'
+}
+repositories {
+    jcenter()
+    mavenCentral()
+}
+sourceSets {
+    main {
+        groovy {
+            srcDir 'src/main/groovy'
+        }
+
+        resources {
+            srcDir 'src/main/resources'
+        }
+    }
+}
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "com.gradle.publish:plugin-publish-plugin:0.9.7"
+    }
+}
+
+uploadArchives {
+    repositories.mavenDeployer {
+        repository(url: 'file:///Users/wangzhi/Documents/localMaven')
+        pom.groupId = myGroupId
+        pom.artifactId = myArtifactId
+        pom.version = myVersion
+    }
+}
+
+version = myVersion              //配置插件的版本号
+group = myGroupId  //插件的群组，插件的classpath会用到
+pluginBundle {
+    website = 'http://www.gradle.org/'
+    vcsUrl = 'https://github.com/gradle/gradle'
+    description = myDescription  //插件描述
+    tags = mytags //插件的tag。可以通过这个在插件门户上搜索
+
+    plugins {
+        greetingsPlugin {
+            id = myApplyId   //插件的id，到时候apply的插件id
+            displayName = myDisplayName
+        }
+    }
+}
+
+
+task uploadToLocalMavenTask(type: Delete, group: "upload") {
+    dependsOn uploadArchives
+    delete project.buildDir
+}
+
