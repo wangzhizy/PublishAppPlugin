@@ -227,17 +227,16 @@ Groovy默认会使用ArrayList，如果你想使用别的可直接使用Java中�
 1. 配置阶段开始之前：project.beforeEvaluate
 1. 配置阶段结束：project.afterEvaluate
     
-    这是一个比较重要的生命周期，当走到这里时说明所有的task都已经配置完成了，我们可以对其进行操作，加入我们的逻辑或插入我们的自定义task。
+    这是一个比较重要的生命周期，当走到这里时说明所有的task都已经配置完成了，我们可以对其进行操作，加入我们的逻辑，也插入我们的自定义task。
 
 1. 执行阶段结束：project.gradle.buildFinished
 
 ## 4：Project
 
+在Gradle中，Project是树状的，每有一个build.gradle就有一个Project。1个根Project可以有1个或多个子Project，每个子Project也可以有1个或多个Project。
+对应到Android中，我们的工程是一个根Project,
+
 
 
 ## 5：Task
 ## 6：Plugin
-
-
-首先是初始化阶段。对我们前面的multi-project build而言，就是执行settings.gradle
-Configration阶段的目标是解析每个project中的build.gradle。比如multi-project build例子中，解析每个子目录中的build.gradle。在这两个阶段之间，我们可以加一些定制化的Hook。这当然是通过API来添加的。
