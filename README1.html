@@ -1,0 +1,296 @@
+<p>Gradle是Android使用的构建工具，了解它可以帮助我们理解Android项目的构建过程，实现我们在构建过程中的小需求。</p>
+<p>本文以实现一个自动生成渠道包（打包，360加固，多渠道配置）的自定义插件为例，介绍一下Gradle的基础知识。</p>
+<h2 id="总览">总览：</h2>
+<ol type="1">
+<li>Groovy基础</li>
+<li>Gradle执行流程</li>
+<li>Project</li>
+<li>Task</li>
+<li>Plugin</li>
+<li>实战</li>
+</ol>
+<h2 id="groovy基础">1：Groovy基础</h2>
+<p>Gradle的开发语言是Groovy，所以我们学习Gradle需要掌握Groovy，不过对于我们Android攻城狮来说这不是问题。为什么这么说呢：</p>
+<ol type="1">
+<li>在Groovy中可以使用所有的Java类库；</li>
+<li>Groovy最终也是编译为Java字节码执行在Java虚拟机上的；</li>
+<li>在上面的基础上Groovy对Java做了许多封装和扩展，方便我们的使用；</li>
+</ol>
+<p>所以在我们的开发过程中，我们可以使用Java代码实现我们的需求。不过为了不浪费Groovy为我们的封装、与源码更好的交互，我们还是了解一下比较好，下面我们来看一下它与Java有那些不一样的地方。</p>
+<h3 id="def关键字">1.1：def关键字</h3>
+<p>见名知意，这个是用来定义的，可以用来定义变量和方法。</p>
+<ol type="1">
+<li><p>定义变量时，表示这个变量是动态类型的，下面的代码完全没有问题。</p>
+<pre><code>def value = 1
+value = &quot;wangzhi&quot;</code></pre></li>
+<li><p>def也可以用来定义方法，当方法指明返回值时，def关键字可以被省略。</p></li>
+</ol>
+<h3 id="string">1.2：String</h3>
+<p>Groovy中有两种String，String（java.lang.String）和GString（groovy.lang.GString），在Groovy中有三种不同的定义String的方式，我们使用最多的应该是第二种；</p>
+<ol type="1">
+<li><p>单引号（java.lang.String）：</p>
+<pre><code>def value = &#39;我是一个字符串&#39; </code></pre></li>
+<li><p>双引号：</p>
+<pre><code>def value1 = &quot;我支持使用表达式，$value，${1+1}&quot; //groovy.lang.GString
+def value1 = &quot;我是一个字符串&quot; //java.lang.String</code></pre></li>
+<li><p>三引号（java.lang.String）：</p>
+<pre><code>def value2 = &quot;&quot;&quot;我支持
+换
+行
+&quot;&quot;&quot;</code></pre></li>
+</ol>
+<h3 id="list">1.3：List</h3>
+<ol type="1">
+<li>定义：<code>def value = [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;]</code></li>
+<li>改：<code>value[0] = &quot;e&quot;</code></li>
+<li>查：<code>value[0]</code></li>
+</ol>
+<p>Groovy默认会使用ArrayList，如果你想使用别的可直接使用Java中强类型的声明方式：</p>
+<p>例如：<code>LinkedList value = [1, 2, 3]</code></p>
+<h3 id="map">1.4：Map</h3>
+<ol type="1">
+<li>定义：<code>def value = [&quot;a&quot;: 1, &quot;b&quot;: 2, &quot;c&quot;: 3]</code></li>
+<li>增、改：<code>value.a = 100</code>或<code>value[&quot;a&quot;] = 100</code></li>
+<li>查：<code>value[a]</code>或<code>value.a</code></li>
+</ol>
+<p>这里默认会使用LinkedHashMap</p>
+<h3 id="range">1.5：Range</h3>
+<ol type="1">
+<li>定义：<code>def value = 1..100</code></li>
+<li>使用：<code>if (1 in value)</code></li>
+</ol>
+<h3 id="metaclass">1.6：metaClass</h3>
+<p>在Groovy中可以在运行期间使用metaClass添加方法和属性，以下代码可以被正确执行。</p>
+<pre><code>    class A{
+        String name
+    }
+
+    A.metaClass.getInfo = {
+        println &quot;getInfo&quot;
+    }
+    A.metaClass.sex = 1
+
+    def a = new A()
+    a.name = &quot;wangzhi&quot;
+    println a.name
+    println a.sex
+    a.getInfo()</code></pre>
+<p>在这里类A被添加上了getInfo方法和sex属性</p>
+<h3 id="闭包">1.7：闭包</h3>
+<p>闭包真的是Groovy中一个很重要的东西，闭包可能有一点像Java中的lambda表达式，不过闭包要强大许多；</p>
+<ol type="1">
+<li><p>闭包的定义：</p>
+<pre><code>def value = { String name -&gt;
+    println name
+}</code></pre>
+<p>闭包的参数类型可以被省略，上面的代码可以修改为：</p>
+<pre><code>def value = { name -&gt;
+    println name
+}</code></pre>
+<p>闭包只有一个参数时，这个参数可以被省略，我们可以直接使用<code>it</code>来访问这个参数，上面的代码可以修改为：</p>
+<pre><code>def value = {
+    println it
+}</code></pre></li>
+<li><p>闭包的使用：</p>
+<p>以我们刚才定义的闭包为例：<code>value.call(&quot;wangzhi&quot;)</code>或<code>value(&quot;wangzhi&quot;)</code></p></li>
+<li><p>闭包的委托策略：</p>
+<ol type="1">
+<li>闭包有三个相关对象:
+<ul>
+<li>this：闭包定义处最近的对象(不包含闭包)；</li>
+<li>owner：闭包定义处最近的对象或闭包；</li>
+<li>delegate：闭包的代理对象，默认和owner一致，可以手动设置；</li>
+</ul>
+<p>不太明白这三个对象的同学不用着急，后面我们用一个例子就可以很清楚的解释它们的作用。</p></li>
+<li>闭包的委托策略：
+<ul>
+<li><code>Closure.OWNER_FIRST</code>：默认策略，首先从owner上寻找属性或方法，找不到则在delegate上寻找。</li>
+<li><code>Closure.DELEGATE_FIRST</code>：先在owner上寻找，后再delegate上寻找。</li>
+<li><code>Closure.OWNER_ONLY</code>：只在owner上寻找</li>
+<li><code>Closure.DELEGATE_ONLY</code>：只在delegate上寻找</li>
+<li><code>Closure.TO_SELF</code>：高级选项，让开发者自定义策略</li>
+</ul></li>
+<li><p>举个例子：请看如下代码</p>
+<pre><code>class A{
+    String name
+    def value = {
+        println name
+    }
+}
+
+def a = new A()
+a.name = &quot;wangzhi&quot;
+a.value.call()</code></pre>
+<p>在这里闭包的三个对象都是A的实例对象，这个应该比较好理解，代码也没什么问题，可以正确输出，下面我们把代码改动一下</p>
+<pre><code>class A{
+    String name
+    def value = {
+        println age
+    }
+}
+
+def a = new A()
+a.name = &quot;wangzhi&quot;
+a.value.call()</code></pre>
+<p>在这里闭包的三个对象仍然是A的实例对象，不过这里代码就有问题了，因为A里没有age这个属性，这时候代理对象就可以派上用场了，我们再改动一下</p>
+<pre><code>class A{
+    String name
+    def value = {
+        println age
+    }
+}
+class B{
+    int age
+}
+
+def a = new A()
+a.name = &quot;wangzhi&quot;
+
+def b = new B()
+b.age = 18
+
+a.value.delegate = b
+a.value.call()</code></pre>
+<p>在这里闭包的代理对象是B的实例对象b，按照默认的委托策略，当闭包在owner中找不到的时候，会在delegate中寻找，所以上面的代码可以正确的输出18</p></li>
+<li><p>在Groovy中当函数的最后一个参数是闭包时，调用时可以省略圆括号。</p>
+<pre><code>buildscript {
+    repositories {
+        google()
+        jcenter()
+    }
+    dependencies {
+        classpath &#39;com.android.tools.build:gradle:3.1.4&#39;
+    }
+}</code></pre>
+<p>是不是很熟悉，这里其实是调用了Project的buildscript方法，不过因为buildscript方法只有一个类型为闭包的参数，所以在这里圆括号是可以省略的，repositories、repositories也是一样的道理，如果是Java应该像下面这么写</p>
+<pre><code>buildscript({
+    repositories({
+        google()
+        jcenter()
+    })
+    dependencies({
+        classpath &#39;com.android.tools.build:gradle:3.1.4&#39;
+    })
+})</code></pre></li>
+</ol></li>
+</ol>
+<h3 id="了解更多">1.7：<a href="https://blog.csdn.net/singwhatiwanna/article/details/76084580">了解更多</a></h3>
+<h2 id="gradle执行流程">2：Gradle执行流程</h2>
+<ol type="1">
+<li>初始化阶段：解析settings.gradle来获取模块信息</li>
+<li>配置阶段：配置每个模块，构建task树</li>
+<li>执行阶段：执行任务</li>
+<li><a href="https://blog.csdn.net/singwhatiwanna/article/details/78797506">了解更多</a></li>
+</ol>
+<h2 id="project">3：Project</h2>
+<p>在Gradle中，Project是树状的，每有一个build.gradle就有一个Project。1个根Project可以有1个或多个子Project，每个子Project也可以有1个或多个Project。</p>
+<p>对应到Android中，我们的工程是一个根Project,我们的每一个module都是一个Project。</p>
+<p>显而易见，Project是我们和Gradle构建脚本交互的核心，我们所有的逻辑也都直接或间接的写在了build.gradle中，下面我们来看一下Project的常用API。</p>
+<h3 id="project相关api">3.1.1：Project相关API</h3>
+<ol type="1">
+<li><code>getRootProject</code>：获取根Project</li>
+<li><code>getAllprojects</code>：获取所有Project</li>
+<li><code>getSubprojects</code>：获取所有子Project</li>
+<li><code>allprojects</code>：遍历所有Project</li>
+<li><code>subprojects</code>：遍历所有子Project</li>
+</ol>
+<h3 id="属性相关api">3.1：属性相关API</h3>
+<ol type="1">
+<li><code>hasProperty</code>：检查属性是否存在</li>
+<li><code>findProperty</code>：查找属性</li>
+<li>自定义Property：
+<ol type="1">
+<li>通过命令行参数定义Property：<code>gradle build -P a=1</code></li>
+<li><p>通过project.ext定义参数：</p>
+<pre><code>ext.a = 1
+
+ext{
+    a = 1
+}</code></pre>
+<p>这个ext是哪里来的呢，这个是因为Project实现了<code>ExtensionAware</code>接口，<code>ExtensionAware</code>接口有一个<code>ExtensionContainer</code>，<code>ExtensionContainer</code>中有一个<code>ExtraPropertiesExtension</code>，有兴趣的同学可以跟着看一下，在<code>ExtraPropertiesExtension</code>中我们就可以找到这个ext了，通过它的默认实现我们还可以发现在ext中定义的属性是放在一个<code>Map&lt;String, Object&gt;</code>里的</p></li>
+<li><p>还是有其它的方法的，有兴趣的同学可以搜索一波  ### 3.1：Task相关API</p></li>
+</ol></li>
+<li><code>getTasks</code>：获取当前Project所有Task</li>
+<li><code>task</code>：创建一个Task</li>
+</ol>
+<h3 id="文件相关api">3.1：文件相关API</h3>
+<ol type="1">
+<li><code>file</code>：获取文件</li>
+<li><code>fileTree</code>：获取文件夹</li>
+<li><code>getBuildDir</code>：获取build文件夹</li>
+</ol>
+<h3 id="gradle生命周期api">3.1：Gradle生命周期API</h3>
+<ol type="1">
+<li><code>beforeEvaluate</code>：配置阶段开始之前</li>
+<li><p><code>afterEvaluate</code>：配置阶段结束</p>
+<p>这是一个比较重要的生命周期，当走到这里时说明所有的task都已经配置完成了，我们可以对其进行操作，加入我们的逻辑，也可以插入我们的自定义task。</p></li>
+<li><p><code>gradle.buildFinished</code>：执行阶段结束</p></li>
+</ol>
+<h3 id="其它api">3.1：其它API</h3>
+<ol type="1">
+<li><code>exec</code>：执行外部命令，我们后面会用到这个方法</li>
+</ol>
+<h2 id="task">4：Task</h2>
+<p>Task是Gradle另外一个很重要的东西，下面我们来看一下Task的基础内容。</p>
+<h3 id="task定义">4.1：Task定义</h3>
+<ol type="1">
+<li><p>我们可以通过我们Project中的task方法来定义一个Task</p>
+<pre><code>task myTask{
+   println &quot;myTask&quot; 
+}
+这里是调用了task方法，因为最后一个参数是闭包，所以这里可以省略圆括号</code></pre></li>
+<li><p>我们也可以使用Project中的TaskContainer来定义一个Task</p>
+<pre><code>project.tasks.create(name: &quot;myTask&quot;) {
+    println &quot;myTask&quot;
+}
+这里的tasks就是一个TaskContainer</code></pre></li>
+</ol>
+<h3 id="task基础信息的配置">4.1：Task基础信息的配置</h3>
+<p>我们可以为我们的Task配置相关信息，配置的方法也有很多，下面我们看一下其中的两种方法；</p>
+<ol type="1">
+<li><p>在创建Task的同时进行配置；</p>
+<pre><code>task myTask(
+    group: &quot;wangzhi&quot;, 
+    description: &quot;is a task&quot;, 
+    dependsOn: build){
+   println &quot;myTask&quot; 
+}</code></pre></li>
+<li><p>在Task中调用对应的配置方法进行配置；</p>
+<pre><code>task myTask {
+    group &quot;wangzhi&quot;
+    description &quot;is a task&quot;
+    dependsOn build
+    println &quot;myTask&quot; 
+}</code></pre></li>
+</ol>
+<h3 id="task依赖">4.1：Task依赖</h3>
+<p>Task可以调用dependsOn方法配置他依赖的Task，可以是一个也可以是多个。</p>
+<pre><code>task A {
+}
+task B {
+    dependsOn A
+}</code></pre>
+<p>以上面的代码为例，当我们要执行Task B时，会先执行Task A，因为我们的Task B是依赖Task A的。</p>
+<h3 id="task执行">4.1：Task执行</h3>
+<p>写在我们Task闭包内的代码是执行在Gradle的配置阶段的，执行每一个任务时都会执行一遍，如果想执行在执行阶段，需要将代码写在<code>doFirst</code>或<code>doLast</code>中。</p>
+<pre><code>task myTask {
+    println &quot;1&quot;
+    doFirst {
+        println &quot;2&quot;
+    }
+    doLast {
+        println &quot;3&quot;
+    }
+}</code></pre>
+<p>在上面的代码中，1会在配置阶段输出，2、3会在执行阶段先后输出，这里的<code>doFirst</code>和<code>doLast</code>都可以写多个。</p>
+<p>为什么要分开<code>doFirst</code>和<code>doLast</code>呢，为什么不是一个<code>do</code>呢，其实这个很简单，在我们想为已有的Task加入我们的逻辑的时候，我们有可能想在Task执行之前加，也有可能需要在Task执行之后添加，这时候这两个就都派上用场了。</p>
+<p><code>mustRunAfter</code>：这个方法可以指定Task必须执行在一个或多个Task后面，和<code>dependsOn</code>是有区别的。</p>
+<p>举个例子：我们有两个Task A、B；</p>
+<ol type="1">
+<li>A <code>mustRunAfter</code> B 代表如果A、B一起执行，A在B之后执行，但是如果只执行A，B不会被执行。</li>
+<li>A <code>dependsOn</code> B 代表就算只执行A，B也会被执行，因为A是依赖与B的。</li>
+</ol>
+<h2 id="plugin">5：Plugin</h2>
+<p>其实有了上面的知识，我们已经可以实现我们的小需求了。但是只能应用在当前项目中，如果其它工程也需要用，我们还需要把我们的代码粘贴到另一个项目的build.gradle中，这简直太麻烦了，后续维护成本也会增加。</p>
+<p>这个时候我们可以把我们的代码封装为一个插件，让其它项目或者其它人能够更方便的使用，下面我们来看一下如何定义一个插件，定义一个插件的方法也有很多，这里我们以新建一个工程的方式，定义一个插件；</p>
+<h2 id="实战">6：实战</h2>
