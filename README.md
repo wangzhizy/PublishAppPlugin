@@ -453,10 +453,10 @@ task myTask {
 #### 2. 接收必要参数
 
 1. 根据我们的需求，我们需要以下参数。
-    1. 360加固包的路径
-    1. 签名文件的路径、密码信息
-    1. 渠道文件的路径
-    1. 文件输出路径
+    - 360加固包的路径
+    - 签名文件的路径、密码信息
+    - 渠道文件的路径
+    - 文件输出路径
 1. 定义扩展信息，新建```PublishAppInfoExtension.groovy```文件，根据上面的信息，定义相关参数
 
     ```
@@ -557,75 +557,73 @@ class PublishAppTask extends DefaultTask {
 }
 ```
 
-#### 4.发布我们的插件
+#### 4.发布我们的插件
 
-1. 发布到本地maven
+##### 1. 发布到本地maven
 
-    1. 添加如下代码
+1. 添加如下代码
 
-        ```
-        apply plugin: 'maven'
-        uploadArchives {
-            repositories.mavenDeployer {
-                repository(url: 'file:///Users/wangzhi/Documents/localMaven')
-                pom.groupId = "com.wangzhi.plugin"
-                pom.artifactId = "publishApp"
-                pom.version = "1.0.0"
-            }
+    ```
+    apply plugin: 'maven'
+    uploadArchives {
+        repositories.mavenDeployer {
+            repository(url: 'file:///Users/wangzhi/Documents/localMaven')
+            pom.groupId = "com.wangzhi.plugin"
+            pom.artifactId = "publishApp"
+            pom.version = "1.0.0"
         }
-        ```
+    }
+    ```
 
-    2. 执行发布任务
-    
-    ![](./images/1543200022578.jpg)
+2. 执行发布任务
 
+![](./images/1543200022578.jpg)
 
+##### 2. 发布到[Gradle Plugins](https://plugins.gradle.org/)
 
-1. 发布到[Gradle Plugins](https://plugins.gradle.org/)
-
-    直到现在我发布的插件还是审核中的状态，所以这里就不具体介绍了，有兴趣的同学可以看一下[相关文档](https://plugins.gradle.org/docs/submit)
+直到现在我发布的插件还是审核中的状态，所以这里就不具体介绍了，有兴趣的同学可以看一下[相关文档](https://plugins.gradle.org/docs/submit)
 
 ## 6：使用我们的插件
 
-1. 在目标工程修改跟根目录下```build.gradle```中的```buildscript```
+### 1. 在目标工程修改跟根目录下```build.gradle```中的```buildscript```
 
-    1. ```repositories```增加我们的本地maven地址
+1. ```repositories```增加我们的本地maven地址
 
-        ```
-        maven {
-            url 'file:///Users/wangzhi/Documents/localMaven'
-        }
-        ```
+    ```
+    maven {
+        url 'file:///Users/wangzhi/Documents/localMaven'
+    }
+    ```
+
+1. ```dependencies```增加我们的插件
+
+    ```
+    classpath 'com.wangzhi.plugin:publishApp:1.0.0'
+    ```
+
+### 2. 修改```app```目录下的```build.gradle```
+
+1. 引入我们的插件
     
-    1. ```dependencies```增加我们的插件
+    ```
+    apply plugin: 'com.wangzhi.plugin.publishApp'
+    ```
 
-        ```
-        classpath 'com.wangzhi.plugin:publishApp:1.0.0'
-        ```
+2. 增加配置信息
 
-1. 修改```app```目录下的```build.gradle```
+    ```
+    publishAppInfo {
+        qihuPath = ""
+        keyStorePath = ""
+        keyStorePass = ""
+        keyStoreKeyAlias = ""
+        keyStoreKeyAliasPass = ""
+        channelPath = ""
+        outputPath = ""
+    }
+    ```
+3. 执行```publishApp```任务
 
-    1. 引入我们的插件
-        
-        ```
-        apply plugin: 'com.wangzhi.plugin.publishApp'
-        ```
-
-    2. 增加配置信息
-
-        ```
-        publishAppInfo {
-            qihuPath = ""
-            keyStorePath = ""
-            keyStorePass = ""
-            keyStoreKeyAlias = ""
-            keyStoreKeyAliasPass = ""
-            channelPath = ""
-            outputPath = ""
-        }
-        ```
-    3. 执行```publishApp```任务
-
-    ![](./images/1543202201601.jpg)
+![](./images/1543202201601.jpg)
     
 希望此文能够让大家了解Gradle的基础知识，在实现相关需求的时候可以多一些思路。
