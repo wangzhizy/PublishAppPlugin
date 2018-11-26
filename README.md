@@ -9,6 +9,7 @@ Gradle是Android使用的构建工具，了解它可以帮助我们理解Andro
 1. Project
 1. Task
 1. 实战（自定义Plugin）
+1. 使用我们的插件
 
 ## 1：Groovy基础
 
@@ -16,7 +17,7 @@ Gradle的开发语言是Groovy，所以我们学习Gradle需要掌握Groovy，�
 
 1. 在Groovy中可以使用所有的Java类库；
 1. Groovy最终也是编译为Java字节码执行在Java虚拟机上的；
-1. 在上面的基础上Groovy对Java做了许多封装和扩展，方便我们的使用；
+1. Groovy对Java做了许多封装和扩展，以方便我们的使用；
 
 所以在我们的开发过程中，我们可以使用Java代码实现我们的需求。不过为了不浪费Groovy为我们的封装、与源码更好的交互，我们还是了解一下比较好，下面我们来看一下它与Java有那些不一样的地方。
 
@@ -222,7 +223,7 @@ Groovy默认会使用ArrayList，如果你想使用别的可直接使用Java中�
         }
         ```
 
-        是不是很熟悉，这里其实是调用了Project的buildscript方法，不过因为buildscript方法只有一个类型为闭包的参数，所以在这里圆括号是可以省略的，repositories、repositories也是一样的道理，如果不省略应该像下面这么写
+        是不是很熟悉，这里其实是调用了Project的buildscript方法，不过因为buildscript方法只有一个类型为闭包的参数，所以在这里圆括号是可以省略的，repositories、dependencies也是一样的道理，如果不省略应该像下面这么写
 
         ```
         buildscript({
@@ -253,7 +254,7 @@ Groovy默认会使用ArrayList，如果你想使用别的可直接使用Java中�
 
 显而易见，Project是我们和Gradle构建脚本交互的核心，我们所有的逻辑也都直接或间接的写在了build.gradle中，下面我们来看一下Project的常用API。
 
-### 3.1.1：Project相关API
+### 3.1：Project相关API
 
 1. ```getRootProject```：获取根Project
 1. ```getAllprojects```：获取所有Project
@@ -261,7 +262,7 @@ Groovy默认会使用ArrayList，如果你想使用别的可直接使用Java中�
 1. ```allprojects```：遍历所有Project
 1. ```subprojects```：遍历所有子Project
 
-### 3.1：属性相关API
+### 3.2：属性相关API
 
 1. ```hasProperty```：检查属性是否存在
 1. ```findProperty```：查找属性
@@ -279,20 +280,18 @@ Groovy默认会使用ArrayList，如果你想使用别的可直接使用Java中�
 
         这个ext是哪里来的呢，这个是因为Project实现了```ExtensionAware```接口，```ExtensionAware```接口有一个```ExtensionContainer```，```ExtensionContainer```中有一个```ExtraPropertiesExtension```，有兴趣的同学可以跟着看一下，在```ExtraPropertiesExtension```中我们就可以找到这个ext了，通过它的默认实现我们还可以发现在ext中定义的属性是放在一个```Map<String, Object>```里的
 
-    1. 还是有其它的方法的，有兴趣的同学可以搜索一波
-
-### 3.1：Task相关API
+### 3.3：Task相关API
 
 1. ```getTasks```：获取当前Project所有Task
 1. ```task```：创建一个Task
 
-### 3.1：文件相关API
+### 3.4：文件相关API
 
 1. ```file```：获取文件
 1. ```fileTree```：获取文件夹
 1. ```getBuildDir```：获取build文件夹
 
-### 3.1：Gradle生命周期API
+### 3.5：Gradle生命周期API
 1. ```beforeEvaluate```：配置阶段开始之前
 1. ```afterEvaluate```：配置阶段结束
     
@@ -300,11 +299,9 @@ Groovy默认会使用ArrayList，如果你想使用别的可直接使用Java中�
 
 1. ```gradle.buildFinished```：执行阶段结束
 
-### 3.1：其它API
+### 3.6：其它API
 
 1. ```exec```：执行外部命令，我们后面会用到这个方法
-
-
 
 ## 4：Task
 
@@ -330,7 +327,7 @@ Task是Gradle另外一个很重要的东西，下面我们来看一下Task的基
     这里的tasks就是一个TaskContainer
     ```
 
-### 4.1：Task基础信息的配置
+### 4.2：Task基础信息的配置
 
 我们可以为我们的Task配置相关信息，配置的方法也有很多，下面我们看一下其中的两种方法；
 
@@ -356,7 +353,7 @@ Task是Gradle另外一个很重要的东西，下面我们来看一下Task的基
     }
     ```
 
-### 4.1：Task依赖
+### 4.3：Task依赖
 
 Task可以调用dependsOn方法配置他依赖的Task，可以是一个也可以是多个。
 
@@ -370,7 +367,7 @@ task B {
 
 以上面的代码为例，当我们要执行Task B时，会先执行Task A，因为我们的Task B是依赖Task A的。
 
-### 4.1：Task执行
+### 4.4：Task执行
 
 写在我们Task闭包内的代码是执行在Gradle的配置阶段的，执行每一个任务时都会执行一遍，如果想执行在执行阶段，需要将代码写在```doFirst```或```doLast```中。
 
@@ -390,7 +387,7 @@ task myTask {
 
 为什么要分开```doFirst```和```doLast```呢，为什么不是一个```do```呢，因为在我们想为已有的Task加入我们的逻辑的时候，我们有可能想在Task执行之前加，也有可能需要在Task执行之后添加，这时候这两个就都派上用场了。
 
-```mustRunAfter```：这个方法可以指定Task必须执行在一个或多个Task后面，和```dependsOn```是有区别的。
+```mustRunAfter```方法：这个方法可以指定Task必须执行在一个或多个Task后面，和```dependsOn```是有区别的。
 
 举个例子：我们有两个Task A、B；
 
@@ -448,7 +445,9 @@ task myTask {
         //后面的值就是我们上一步新建的文件路径，这里的路径是没有限制的
         ```
 
-    1. 最后我们的目录变成了这样![](./images/1542968337409.jpg)
+    1. 最后我们的目录变成了这样
+
+    ![](./images/1542968337409.jpg)
 
 1. 接收必要参数
 
@@ -464,12 +463,168 @@ task myTask {
             String qihuPath //360加固包（jiagu.jar）的文件路径
             String keyStorePath //keyStor文件路径
             String keyStorePass //keyStor密码
-            String keyStoreKeyAlias //keyStoreKeyAlias密码
-            String keyStoreKeyAliasPass
+            String keyStoreKeyAlias //keyStoreKeyAlias
+            String keyStoreKeyAliasPass //keyStoreKeyAlias密码
             String channelPath //渠道文件路径
             String outputPath //文件夹输出路径
         }
         ```
+    1. 为目标工程定义扩展：
+
+        ```
+        class PublishAppPlugin implements Plugin<Project> {
+            @Override
+            void apply(Project project) {
+                project.extensions.create("publishAppInfo", PublishAppInfoExtension.class)
+            }
+        }
+        ```
+
+1. 功能实现：
+
+    1. 自定义Task
+
+        1. 新建```PublishAppTask```继承```DefaultTask```
+
+            ```
+            class PublishAppTask extends DefaultTask{
+                PublishAppTask() {
+                    group = "wangzhi"
+                    dependsOn "build"
+                }
+                @TaskAction
+                void doAction(){
+                    //打包已完成
+                }
+            }
+            ```
+        1. 为目标工程定义我们的Task
+
+            ```
+            class PublishAppPlugin implements Plugin<Project> {
+                @Override
+                void apply(Project project) {
+                    project.extensions.create("publishAppInfo", PublishAppInfoExtension)
+                    project.tasks.create("publishApp", PublishAppTask.class)
+                }
+            }
+            ```
+
+        1. ```@TaskAction```是任务执行的方法，会在执行阶段执行，因为我们的任务是依赖于```build```的，所以当我们的任务执行时，打包已经完成了。
+        
+    1. 加固我们的应用
+
+        这里参考360加固的命令行加固相关文档即可，下面我们来看一下代码。
+
+        ```
+        class PublishAppTask extends DefaultTask {
+
+            PublishAppTask() {
+                group = "wangzhi"
+                dependsOn "build"
+            }
+
+            @TaskAction
+            void doAction() {
+                //打包已完成
+                def oldApkPath = "${project.getBuildDir()}/outputs/apk/release/app-release.apk"
+
+                //获取参数
+                def qihuPath = project.extensions.publishAppInfo.qihuPath
+                def keyStorePath = project.extensions.publishAppInfo.keyStorePath
+                def keyStorePass = project.extensions.publishAppInfo.keyStorePass
+                def keyStoreKeyAlias = project.extensions.publishAppInfo.keyStoreKeyAlias
+                def keyStoreKeyAliasPass = project.extensions.publishAppInfo.keyStoreKeyAliasPass
+                def apkOutputDir = project.extensions.publishAppInfo.outputPath
+                //360加固-登录
+                execCmd("java -jar ${qihuPath} -login userName pass")
+                //360加固-签名信息配置
+                execCmd("java -jar ${qihuPath}  -importsign ${keyStorePath} ${keyStorePass} ${keyStoreKeyAlias} ${keyStoreKeyAliasPass}")
+                //360加固-渠道信息配置
+                execCmd("java -jar ${qihuPath} -importmulpkg ${project.extensions.publishAppInfo.channelPath}")
+                //360加固-开始加固
+                execCmd("java -jar ${qihuPath} -jiagu ${oldApkPath} ${apkOutputDir} -autosign  -automulpkg")
+                println "加固完成"
+            }
+
+            void execCmd(cmd) {
+                project.exec {
+                    executable 'bash'
+                    args '-c', cmd
+                }
+            }
+        }
+        ```
+
+4. 发布我们的插件
+
+1. 发布到本地maven
+
+    1. 添加如下代码
+
+        ```
+        apply plugin: 'maven'
+        uploadArchives {
+            repositories.mavenDeployer {
+                repository(url: 'file:///Users/wangzhi/Documents/localMaven')
+                pom.groupId = "com.wangzhi.plugin"
+                pom.artifactId = "publishApp"
+                pom.version = "1.0.0"
+            }
+        }
+        ```
+
+    2：执行发布任务
+    
+    ![](./images/1543200022578.jpg)
 
 
 
+1. 发布到[Gradle Plugins](https://plugins.gradle.org/)
+
+    直到现在我发布的插件还是审核中的状态，所以这里就不具体介绍了，有兴趣的同学可以看一下[相关文档](https://plugins.gradle.org/docs/submit)
+
+## 6：使用我们的插件
+
+1. 在目标工程修改跟根目录下```build.gradle```中的```buildscript```
+
+    1. ```repositories```增加我们的本地maven地址
+
+        ```
+        maven {
+            url 'file:///Users/wangzhi/Documents/localMaven'
+        }
+        ```
+    
+    1. ```dependencies```增加我们的插件
+
+        ```
+        classpath 'com.wangzhi.plugin:publishApp:1.0.0'
+        ```
+
+1. 修改```app```目录下的```build.gradle```
+
+    1. 引入我们的插件
+        
+        ```
+        apply plugin: 'com.wangzhi.plugin.publishApp'
+        ```
+
+    2. 增加配置信息
+
+        ```
+        publishAppInfo {
+            qihuPath = ""
+            keyStorePath = ""
+            keyStorePass = ""
+            keyStoreKeyAlias = ""
+            keyStoreKeyAliasPass = ""
+            channelPath = ""
+            outputPath = ""
+        }
+        ```
+    3. 执行```publishApp```任务
+
+    ![](./images/1543202201601.jpg)
+    
+希望此文能够让大家了解Gradle的基础知识，在实现相关需求的时候可以多一些思路。
