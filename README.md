@@ -207,7 +207,7 @@ Groovy默认会使用ArrayList，如果你想使用别的可直接使用Java中�
     a.value.call()
     ```
 
-    在这里闭包的代理对象是B的实例对象b，按照默认的委托策略，当闭包在owner中找不到的时候，会在delegate中寻找，所以上面的代码可以正确的输出18
+    在这里闭包的代理对象是B的实例对象b，按照默认的委托策略，当闭包在owner中找不到的时候，会在delegate中寻找，所以上面的代码可以正确的输出18
 
 4. 在Groovy中当函数的最后一个参数是闭包时，调用时可以省略圆括号。
 
@@ -223,7 +223,7 @@ Groovy默认会使用ArrayList，如果你想使用别的可直接使用Java中�
     }
     ```
 
-    是不是很熟悉，这里其实是调用了Project的buildscript方法，不过因为buildscript方法只有一个类型为闭包的参数，所以在这里圆括号是可以省略的，repositories、dependencies也是一样的道理，如果不省略应该像下面这么写
+    是不是很熟悉，这里其实是调用了Project的buildscript方法，不过因为buildscript方法只有一个类型为闭包的参数，所以在这里圆括号是可以省略的，repositories、dependencies也是一样的道理，如果不省略应该像下面这么写
 
     ```
     buildscript({
@@ -310,7 +310,7 @@ Task是Gradle另外一个很重要的东西，下面我们来看一下Task的基
 
 ### 4.1：Task定义
 
-1. 我们可以通过我们Project中的task方法来定义一个Task
+1. 我们可以通过我们Project中的task方法来定义一个Task
 
     ```
     task myTask{
@@ -356,7 +356,7 @@ Task是Gradle另外一个很重要的东西，下面我们来看一下Task的基
 
 ### 4.3：Task依赖
 
-Task可以调用dependsOn方法配置他依赖的Task，可以是一个也可以是多个。
+Task可以调用dependsOn方法配置他依赖的Task，可以是一个也可以是多个。
 
 ```
 task A {
@@ -412,7 +412,7 @@ task myTask {
 1. 修改```app文件夹下的build.gradle```文件
 
     ```
-    apply plugin: 'groovy'//使用groovy插件
+    apply plugin: 'groovy'//使用groovy插件
     dependencies {
         implementation gradleApi()//引入gradleApi
     }
@@ -511,7 +511,7 @@ task myTask {
     }
     ```
 
-1. ```@TaskAction```是任务执行的方法，会在执行阶段执行，因为我们的任务是依赖于```build```的，所以当我们的任务执行时，打包已经完成了。
+1. ```@TaskAction```是任务执行的方法，会在执行阶段执行，因为我们的任务是依赖于```build```的，所以当我们的任务执行时，打包已经完成了。
     
 ##### 2. 加固我们的应用
 
