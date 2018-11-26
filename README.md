@@ -112,31 +112,31 @@ Groovy默认会使用ArrayList，如果你想使用别的可直接使用Java中�
 
 #### 1. 闭包的定义：
 
-    ```
-    def value = { String name ->
-        println name
-    }
-    ```
+```
+def value = { String name ->
+    println name
+}
+```
 
-    闭包的参数类型可以被省略，上面的代码可以修改为：
+闭包的参数类型可以被省略，上面的代码可以修改为：
 
-    ```
-    def value = { name ->
-        println name
-    }
-    ```
+```
+def value = { name ->
+    println name
+}
+```
 
-    闭包只有一个参数时，这个参数可以被省略，我们可以直接使用```it```来访问这个参数，上面的代码可以修改为：
+闭包只有一个参数时，这个参数可以被省略，我们可以直接使用```it```来访问这个参数，上面的代码可以修改为：
 
-    ```
-    def value = {
-        println it
-    }
-    ```
+```
+def value = {
+    println it
+}
+```
 
 #### 2. 闭包的使用：
 
-    以我们刚才定义的闭包为例：```value.call("wangzhi")```或```value("wangzhi")```
+以我们刚才定义的闭包为例：```value.call("wangzhi")```或```value("wangzhi")```
 
 #### 3. 闭包的委托策略：
 
@@ -338,7 +338,7 @@ Task是Gradle另外一个很重要的东西，下面我们来看一下Task的基
     task myTask(
         group: "wangzhi", 
         description: "is a task", 
-        dependsOn: build){
+        dependsOn: "build"){
        println "myTask" 
     }
     ```
@@ -349,7 +349,7 @@ Task是Gradle另外一个很重要的东西，下面我们来看一下Task的基
     task myTask {
         group "wangzhi"
         description "is a task"
-        dependsOn build
+        dependsOn "build"
         println "myTask" 
     }
     ```
@@ -528,6 +528,8 @@ class PublishAppTask extends DefaultTask {
     @TaskAction
     void doAction() {
         //打包已完成
+
+        //这里的路径其实是不严谨的·
         def oldApkPath = "${project.getBuildDir()}/outputs/apk/release/app-release.apk"
 
         //获取参数
