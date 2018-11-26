@@ -1,6 +1,6 @@
-Gradle是Android使用的构建工具，了解它可以帮助我们理解Android项目的构建过程，实现我们在构建过程中的小需求。
+Gradle是Android使用的构建工具，了解它可以帮助我们理解Android项目的构建过程，实现我们在构建过程中的小需求。
 
-本文以实现一个自动生成渠道包（打包，360加固，多渠道配置）的自定义插件为例，介绍一下Gradle的基础知识。
+本文以实现一个自动生成渠道包（打包，360加固，多渠道配置）的自定义插件为例，介绍一下Gradle的基础知识。
 
 ## 总览：
 
@@ -13,19 +13,19 @@ Gradle是Android使用的构建工具，了解它可以帮助我们理解Andro
 
 ## 1：Groovy基础
 
-Gradle的开发语言是Groovy，所以我们学习Gradle需要掌握Groovy，不过对于我们Android攻城狮来说这不是问题。为什么这么说呢：
+Gradle的开发语言是Groovy，所以我们学习Gradle需要掌握Groovy，不过对于我们Android攻城狮来说这不是问题。为什么这么说呢：
 
 1. 在Groovy中可以使用所有的Java类库；
 1. Groovy最终也是编译为Java字节码执行在Java虚拟机上的；
 1. Groovy对Java做了许多封装和扩展，以方便我们的使用；
 
-所以在我们的开发过程中，我们可以使用Java代码实现我们的需求。不过为了不浪费Groovy为我们的封装、与源码更好的交互，我们还是了解一下比较好，下面我们来看一下它与Java有那些不一样的地方。
+所以在我们的开发过程中，我们可以使用Java代码实现我们的需求。不过为了不浪费Groovy为我们的封装、与源码更好的交互，我们还是了解一下比较好，下面我们来看一下它与Java有那些不一样的地方。
 
 ### 1.1：def关键字
 
-见名知意，这个是用来定义的，可以用来定义变量和方法。
+见名知意，这个是用来定义的，可以用来定义变量和方法。
 
-1. 定义变量时，表示这个变量是动态类型的，下面的代码完全没有问题。
+1. 定义变量时，表示这个变量是动态类型的，下面的代码完全没有问题。
 
     ```
     def value = 1
@@ -36,7 +36,7 @@ Gradle的开发语言是Groovy，所以我们学习Gradle需要掌握Groovy，�
 
 ### 1.2：String
 
-Groovy中有两种String，String（java.lang.String）和GString（groovy.lang.GString），在Groovy中有三种不同的定义String的方式，我们使用最多的应该是第二种；
+Groovy中有两种String，String（java.lang.String）和GString（groovy.lang.GString），在Groovy中有三种不同的定义String的方式，我们使用最多的应该是第二种；
 
 1. 单引号（java.lang.String）：
 
@@ -47,14 +47,14 @@ Groovy中有两种String，String（java.lang.String）和GString（groovy.lang
 1. 双引号：
 
     ```
-    def value1 = "我支持使用表达式，$value，${1+1}" //groovy.lang.GString
+    def value1 = "我支持使用表达式，$value，${1+1}" //groovy.lang.GString
     def value1 = "我是一个字符串" //java.lang.String
     ```
 
 1. 三引号（java.lang.String）：
 
     ```
-    def value2 = """我支持
+    def value2 = """我支持
     换
     行
     """
@@ -76,7 +76,7 @@ Groovy默认会使用ArrayList，如果你想使用别的可直接使用Java中�
 1. 增、改：```value.a = 100```或```value["a"] = 100```
 1. 查：```value[a]```或```value.a```
 
-这里默认会使用LinkedHashMap
+这里默认会使用LinkedHashMap
 
 ### 1.5：Range
 
@@ -108,7 +108,7 @@ Groovy默认会使用ArrayList，如果你想使用别的可直接使用Java中�
 
 ### 1.7：闭包
 
-闭包真的是Groovy中一个很重要的东西，闭包可能有一点像Java中的lambda表达式，不过闭包要强大许多；
+闭包真的是Groovy中一个很重要的东西，闭包可能有一点像Java中的lambda表达式，不过闭包要强大许多；
 
 #### 1. 闭包的定义：
 
@@ -126,7 +126,7 @@ Groovy默认会使用ArrayList，如果你想使用别的可直接使用Java中�
     }
     ```
 
-    闭包只有一个参数时，这个参数可以被省略，我们可以直接使用```it```来访问这个参数，上面的代码可以修改为：
+    闭包只有一个参数时，这个参数可以被省略，我们可以直接使用```it```来访问这个参数，上面的代码可以修改为：
 
     ```
     def value = {
@@ -223,7 +223,7 @@ Groovy默认会使用ArrayList，如果你想使用别的可直接使用Java中�
     }
     ```
 
-    是不是很熟悉，这里其实是调用了Project的buildscript方法，不过因为buildscript方法只有一个类型为闭包的参数，所以在这里圆括号是可以省略的，repositories、dependencies也是一样的道理，如果不省略应该像下面这么写
+    是不是很熟悉，这里其实是调用了Project的buildscript方法，不过因为buildscript方法只有一个类型为闭包的参数，所以在这里圆括号是可以省略的，repositories、dependencies也是一样的道理，如果不省略应该像下面这么写
 
     ```
     buildscript({
@@ -242,13 +242,13 @@ Groovy默认会使用ArrayList，如果你想使用别的可直接使用Java中�
 ## 2：Gradle执行流程
 
 1. 初始化阶段：解析settings.gradle来获取模块信息
-1. 配置阶段：配置每个模块，构建task树
+1. 配置阶段：配置每个模块，构建task树
 1. 执行阶段：执行任务
 1. [了解更多](https://blog.csdn.net/singwhatiwanna/article/details/78797506)
 
 ## 3：Project
 
-在Gradle中，Project是树状的，每有一个build.gradle就有一个Project。1个根Project可以有1个或多个子Project，每个子Project也可以有1个或多个Project。
+在Gradle中，Project是树状的，每有一个build.gradle就有一个Project。1个根Project可以有1个或多个子Project，每个子Project也可以有1个或多个Project。
 
 对应到Android中，我们的工程是一个根Project,我们的每一个module都是一个Project。
 
@@ -266,7 +266,7 @@ Groovy默认会使用ArrayList，如果你想使用别的可直接使用Java中�
 
 #### 1. ```hasProperty```：检查属性是否存在
 #### 2. ```findProperty```：查找属性
-#### 3. 自定义Property：
+#### 3. 自定义Property：
 
 1. 通过命令行参数定义Property：```gradle build -P a=1```
 1. 通过project.ext定义参数：
@@ -279,14 +279,14 @@ Groovy默认会使用ArrayList，如果你想使用别的可直接使用Java中�
     }
     ```
 
-    这个ext是哪里来的呢，这个是因为Project实现了```ExtensionAware```接口，```ExtensionAware```接口有一个```ExtensionContainer```，```ExtensionContainer```中有一个```ExtraPropertiesExtension```，有兴趣的同学可以跟着看一下，在```ExtraPropertiesExtension```中我们就可以找到这个ext了，通过它的默认实现我们还可以发现在ext中定义的属性是放在一个```Map<String, Object>```里的
+    这个ext是哪里来的呢，这个是因为Project实现了```ExtensionAware```接口，```ExtensionAware```接口有一个```ExtensionContainer```，```ExtensionContainer```中有一个```ExtraPropertiesExtension```，有兴趣的同学可以跟着看一下，在```ExtraPropertiesExtension```中我们就可以找到这个ext了，通过它的默认实现我们还可以发现在ext中定义的属性是放在一个```Map<String, Object>```里的
 
 ### 3.3：Task相关API
 
 1. ```getTasks```：获取当前Project所有Task
 1. ```task```：创建一个Task
 
-### 3.4：文件相关API
+### 3.4：文件相关API
 
 1. ```file```：获取文件
 1. ```fileTree```：获取文件夹
@@ -296,7 +296,7 @@ Groovy默认会使用ArrayList，如果你想使用别的可直接使用Java中�
 1. ```beforeEvaluate```：配置阶段开始之前
 1. ```afterEvaluate```：配置阶段结束
     
-    这是一个比较重要的生命周期，当走到这里时说明所有的task都已经配置完成了，我们可以对其进行操作，加入我们的逻辑，也可以插入我们的自定义task。
+    这是一个比较重要的生命周期，当走到这里时说明所有的task都已经配置完成了，我们可以对其进行操作，加入我们的逻辑，也可以插入我们的自定义task。
 
 1. ```gradle.buildFinished```：执行阶段结束
 
@@ -316,7 +316,7 @@ Task是Gradle另外一个很重要的东西，下面我们来看一下Task的基
     task myTask{
        println "myTask" 
     }
-    这里是调用了task方法，因为最后一个参数是闭包，所以这里可以省略圆括号
+    这里是调用了task方法，因为最后一个参数是闭包，所以这里可以省略圆括号
     ```
 
 1. 我们也可以使用Project中的TaskContainer来定义一个Task
@@ -330,9 +330,9 @@ Task是Gradle另外一个很重要的东西，下面我们来看一下Task的基
 
 ### 4.2：Task基础信息的配置
 
-我们可以为我们的Task配置相关信息，配置的方法也有很多，下面我们看一下其中的两种方法；
+我们可以为我们的Task配置相关信息，配置的方法也有很多，下面我们看一下其中的两种方法；
 
-1. 在创建Task的同时进行配置；
+1. 在创建Task的同时进行配置；
 
     ```
     task myTask(
@@ -366,7 +366,7 @@ task B {
 }
 ```
 
-以上面的代码为例，当我们要执行Task B时，会先执行Task A，因为我们的Task B是依赖Task A的。
+以上面的代码为例，当我们要执行Task B时，会先执行Task A，因为我们的Task B是依赖Task A的。
 
 ### 4.4：Task执行
 
@@ -386,27 +386,27 @@ task myTask {
 
 在上面的代码中，1会在配置阶段输出，2、3会在执行阶段先后输出，这里的```doFirst```和```doLast```都可以写多个。
 
-为什么要分开```doFirst```和```doLast```呢，为什么不是一个```do```呢，因为在我们想为已有的Task加入我们的逻辑的时候，我们有可能想在Task执行之前加，也有可能需要在Task执行之后添加，这时候这两个就都派上用场了。
+为什么要分开```doFirst```和```doLast```呢，为什么不是一个```do```呢，因为在我们想为已有的Task加入我们的逻辑的时候，我们有可能想在Task执行之前加，也有可能需要在Task执行之后添加，这时候这两个就都派上用场了。
 
 ```mustRunAfter```方法：这个方法可以指定Task必须执行在一个或多个Task后面，和```dependsOn```是有区别的。
 
-举个例子：我们有两个Task A、B；
+举个例子：我们有两个Task A、B；
 
-1. A ``` mustRunAfter ``` B ：如果A、B一起执行，A在B之后执行，但是如果只执行A，B不会被执行。
+1. A ``` mustRunAfter ``` B ：如果A、B一起执行，A在B之后执行，但是如果只执行A，B不会被执行。
 1. A ``` dependsOn ``` B ：就算只执行A，B也会被执行，因为A是依赖B的。
 
 ## 5：实战（自定义Plugin）
 
-下面我们一步步实现我们的需求，我们的需求是自动生成渠道包（打包，360加固，多渠道配置）；
+下面我们一步步实现我们的需求，我们的需求是自动生成渠道包（打包，360加固，多渠道配置）；
 
-其实有了上面的知识，我们已经可以实现我们的小需求了。但是只能应用在当前项目中，如果其它项目也需要用，我们还需要把我们的代码粘贴到另一个项目的build.gradle中，这简直太麻烦了，后续维护成本也会增加。
+其实有了上面的知识，我们已经可以实现我们的小需求了。但是只能应用在当前项目中，如果其它项目也需要用，我们还需要把我们的代码粘贴到另一个项目的build.gradle中，这简直太麻烦了，后续维护成本也会增加。
 
-这个时候我们可以把我们的代码封装为一个插件，让其它项目或者其它人能够更方便的使用。自定义插件的方法也有很多，这里我们以新建一个工程的方式，去完成我们的需求，
+这个时候我们可以把我们的代码封装为一个插件，让其它项目或者其它人能够更方便的使用。自定义插件的方法也有很多，这里我们以新建一个工程的方式，去完成我们的需求，
 
 #### 1. 创建工程：
 
 1. 使用AndroidStudio新建一个工程即可，
-1. 在```src/main```下新建两个文件夹，```groovy、resources```,
+1. 在```src/main```下新建两个文件夹，```groovy、resources```,
 
     PS：这里的名字其实叫什么都可以，之前的```java、res```我们可以直接删除。
 1. 修改```app文件夹下的build.gradle```文件
@@ -439,11 +439,11 @@ task myTask {
     }
     ```
 
-1. 在```resources/META-INF/gradle-plugins```目录中新建```com.wangzhi.plugin.publishApp.properties```文件，这个文件名就是别人要使用我们插件时要```apply```的名字，我这里是```com.wangzhi.plugin.publishApp```，在这个文件中写入以下代码：
+1. 在```resources/META-INF/gradle-plugins```目录中新建```com.wangzhi.plugin.publishApp.properties```文件，这个文件名就是别人要使用我们插件时要```apply```的名字，我这里是```com.wangzhi.plugin.publishApp```，在这个文件中写入以下代码：
 
     ```
     implementation-class=com.wangzhi.plugin.publishApp.PublishAppPlugin
-    //后面的值就是我们上一步新建的文件路径，这里的路径是没有限制的
+    //后面的值就是我们上一步新建的文件路径，这里的路径是没有限制的
     ```
 
 1. 最后我们的目录变成了这样
@@ -481,7 +481,7 @@ task myTask {
     }
     ```
 
-#### 3. 功能实现：
+#### 3. 功能实现：
 
 ##### 1. 自定义Task
 
@@ -511,9 +511,9 @@ task myTask {
     }
     ```
 
-1. ```@TaskAction```是任务执行的方法，会在执行阶段执行，因为我们的任务是依赖于```build```的，所以当我们的任务执行时，打包已经完成了。
+1. ```@TaskAction```是任务执行的方法，会在执行阶段执行，因为我们的任务是依赖于```build```的，所以当我们的任务执行时，打包已经完成了。
     
-##### 2. 加固我们的应用
+##### 2. 加固我们的应用
 
 这里参考360加固的命令行加固相关文档即可，下面我们来看一下代码。
 
@@ -557,7 +557,7 @@ class PublishAppTask extends DefaultTask {
 }
 ```
 
-#### 4.发布我们的插件
+#### 4.发布我们的插件
 
 ##### 1. 发布到本地maven
 
@@ -581,7 +581,7 @@ class PublishAppTask extends DefaultTask {
 
 ##### 2. 发布到[Gradle Plugins](https://plugins.gradle.org/)
 
-直到现在我发布的插件还是审核中的状态，所以这里就不具体介绍了，有兴趣的同学可以看一下[相关文档](https://plugins.gradle.org/docs/submit)
+直到现在我发布的插件还是审核中的状态，所以这里就不具体介绍了，有兴趣的同学可以看一下[相关文档](https://plugins.gradle.org/docs/submit)
 
 ## 6：使用我们的插件
 
@@ -603,7 +603,7 @@ class PublishAppTask extends DefaultTask {
 
 ### 2. 修改```app```目录下的```build.gradle```
 
-1. 引入我们的插件
+1. 引入我们的插件
     
     ```
     apply plugin: 'com.wangzhi.plugin.publishApp'
@@ -626,4 +626,4 @@ class PublishAppTask extends DefaultTask {
 
 ![](./images/1543202201601.jpg)
     
-希望此文能够让大家了解Gradle的基础知识，在实现相关需求的时候可以多一些思路。
+希望此文能够让大家了解Gradle的基础知识，在实现相关需求的时候可以多一些思路。
