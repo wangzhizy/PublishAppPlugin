@@ -110,7 +110,7 @@ Groovy默认会使用ArrayList，如果你想使用别的可直接使用Java中�
 
 闭包真的是Groovy中一个很重要的东西，闭包可能有一点像Java中的lambda表达式，不过闭包要强大许多；
 
-1. 闭包的定义：
+#### 1. 闭包的定义：
 
     ```
     def value = { String name ->
@@ -134,110 +134,110 @@ Groovy默认会使用ArrayList，如果你想使用别的可直接使用Java中�
     }
     ```
 
-1. 闭包的使用：
+#### 2. 闭包的使用：
 
     以我们刚才定义的闭包为例：```value.call("wangzhi")```或```value("wangzhi")```
 
-1. 闭包的委托策略：
+#### 3. 闭包的委托策略：
 
-    1. 闭包有三个相关对象:
-        - this：闭包定义处最近的对象(不包含闭包)；
-        - owner：闭包定义处最近的对象或闭包；
-        - delegate：闭包的代理对象，默认和owner一致，可以手动设置；
+1. 闭包有三个相关对象:
+    - this：闭包定义处最近的对象(不包含闭包)；
+    - owner：闭包定义处最近的对象或闭包；
+    - delegate：闭包的代理对象，默认和owner一致，可以手动设置；
 
-        不太明白这三个对象的同学不用着急，后面我们用一个例子就可以很清楚的解释它们的作用。
+    不太明白这三个对象的同学不用着急，后面我们用一个例子就可以很清楚的解释它们的作用。
 
-    2. 闭包的委托策略：
-        - ```Closure.OWNER_FIRST```：默认策略，首先从owner上寻找属性或方法，找不到则在delegate上寻找。
-        - ```Closure.DELEGATE_FIRST```：先在owner上寻找，后再delegate上寻找。
-        - ```Closure.OWNER_ONLY```：只在owner上寻找
-        - ```Closure.DELEGATE_ONLY```：只在delegate上寻找
-        - ```Closure.TO_SELF```：高级选项，让开发者自定义策略
+2. 闭包的委托策略：
+    - ```Closure.OWNER_FIRST```：默认策略，首先从owner上寻找属性或方法，找不到则在delegate上寻找。
+    - ```Closure.DELEGATE_FIRST```：先在owner上寻找，后再delegate上寻找。
+    - ```Closure.OWNER_ONLY```：只在owner上寻找
+    - ```Closure.DELEGATE_ONLY```：只在delegate上寻找
+    - ```Closure.TO_SELF```：高级选项，让开发者自定义策略
 
-    3. 举个例子：请看如下代码
+3. 举个例子：请看如下代码
 
-        ```
-        class A{
-            String name
-            def value = {
-                println name
-            }
+    ```
+    class A{
+        String name
+        def value = {
+            println name
         }
+    }
 
-        def a = new A()
-        a.name = "wangzhi"
-        a.value.call()
-        ```
+    def a = new A()
+    a.name = "wangzhi"
+    a.value.call()
+    ```
 
-        在这里闭包的三个对象都是A的实例对象，这个应该比较好理解，代码也没什么问题，可以正确输出，下面我们把代码改动一下
+    在这里闭包的三个对象都是A的实例对象，这个应该比较好理解，代码也没什么问题，可以正确输出，下面我们把代码改动一下
 
-        ```
-        class A{
-            String name
-            def value = {
-                println age
-            }
+    ```
+    class A{
+        String name
+        def value = {
+            println age
         }
+    }
 
-        def a = new A()
-        a.name = "wangzhi"
-        a.value.call()
-        ```
+    def a = new A()
+    a.name = "wangzhi"
+    a.value.call()
+    ```
 
-        在这里闭包的三个对象仍然是A的实例对象，不过这里代码就有问题了，因为A里没有age这个属性，这时候代理对象就可以派上用场了，我们再改动一下
+    在这里闭包的三个对象仍然是A的实例对象，不过这里代码就有问题了，因为A里没有age这个属性，这时候代理对象就可以派上用场了，我们再改动一下
 
-        ```
-        class A{
-            String name
-            def value = {
-                println age
-            }
+    ```
+    class A{
+        String name
+        def value = {
+            println age
         }
-        class B{
-            int age
+    }
+    class B{
+        int age
+    }
+
+    def a = new A()
+    a.name = "wangzhi"
+
+    def b = new B()
+    b.age = 18
+
+    a.value.delegate = b
+    a.value.call()
+    ```
+
+    在这里闭包的代理对象是B的实例对象b，按照默认的委托策略，当闭包在owner中找不到的时候，会在delegate中寻找，所以上面的代码可以正确的输出18
+
+4. 在Groovy中当函数的最后一个参数是闭包时，调用时可以省略圆括号。
+
+    ```
+    buildscript {
+        repositories {
+            google()
+            jcenter()
         }
-
-        def a = new A()
-        a.name = "wangzhi"
-
-        def b = new B()
-        b.age = 18
-
-        a.value.delegate = b
-        a.value.call()
-        ```
-
-        在这里闭包的代理对象是B的实例对象b，按照默认的委托策略，当闭包在owner中找不到的时候，会在delegate中寻找，所以上面的代码可以正确的输出18
-
-    4. 在Groovy中当函数的最后一个参数是闭包时，调用时可以省略圆括号。
-
-        ```
-        buildscript {
-            repositories {
-                google()
-                jcenter()
-            }
-            dependencies {
-                classpath 'com.android.tools.build:gradle:3.1.4'
-            }
+        dependencies {
+            classpath 'com.android.tools.build:gradle:3.1.4'
         }
-        ```
+    }
+    ```
 
-        是不是很熟悉，这里其实是调用了Project的buildscript方法，不过因为buildscript方法只有一个类型为闭包的参数，所以在这里圆括号是可以省略的，repositories、dependencies也是一样的道理，如果不省略应该像下面这么写
+    是不是很熟悉，这里其实是调用了Project的buildscript方法，不过因为buildscript方法只有一个类型为闭包的参数，所以在这里圆括号是可以省略的，repositories、dependencies也是一样的道理，如果不省略应该像下面这么写
 
-        ```
-        buildscript({
-            repositories({
-                google()
-                jcenter()
-            })
-            dependencies({
-                classpath 'com.android.tools.build:gradle:3.1.4'
-            })
+    ```
+    buildscript({
+        repositories({
+            google()
+            jcenter()
         })
-        ```
+        dependencies({
+            classpath 'com.android.tools.build:gradle:3.1.4'
+        })
+    })
+    ```
 
-### 1.7：[了解更多](https://blog.csdn.net/singwhatiwanna/article/details/76084580)
+### 1.8：[了解更多](https://blog.csdn.net/singwhatiwanna/article/details/76084580)
 
 ## 2：Gradle执行流程
 
@@ -264,21 +264,22 @@ Groovy默认会使用ArrayList，如果你想使用别的可直接使用Java中�
 
 ### 3.2：属性相关API
 
-1. ```hasProperty```：检查属性是否存在
-1. ```findProperty```：查找属性
-1. 自定义Property：
-    1. 通过命令行参数定义Property：```gradle build -P a=1```
-    1. 通过project.ext定义参数：
+#### 1. ```hasProperty```：检查属性是否存在
+#### 2. ```findProperty```：查找属性
+#### 3. 自定义Property：
 
-        ```
-        ext.a = 1
+1. 通过命令行参数定义Property：```gradle build -P a=1```
+1. 通过project.ext定义参数：
 
-        ext{
-            a = 1
-        }
-        ```
+    ```
+    ext.a = 1
 
-        这个ext是哪里来的呢，这个是因为Project实现了```ExtensionAware```接口，```ExtensionAware```接口有一个```ExtensionContainer```，```ExtensionContainer```中有一个```ExtraPropertiesExtension```，有兴趣的同学可以跟着看一下，在```ExtraPropertiesExtension```中我们就可以找到这个ext了，通过它的默认实现我们还可以发现在ext中定义的属性是放在一个```Map<String, Object>```里的
+    ext{
+        a = 1
+    }
+    ```
+
+    这个ext是哪里来的呢，这个是因为Project实现了```ExtensionAware```接口，```ExtensionAware```接口有一个```ExtensionContainer```，```ExtensionContainer```中有一个```ExtraPropertiesExtension```，有兴趣的同学可以跟着看一下，在```ExtraPropertiesExtension```中我们就可以找到这个ext了，通过它的默认实现我们还可以发现在ext中定义的属性是放在一个```Map<String, Object>```里的
 
 ### 3.3：Task相关API
 
@@ -402,161 +403,161 @@ task myTask {
 
 这个时候我们可以把我们的代码封装为一个插件，让其它项目或者其它人能够更方便的使用。自定义插件的方法也有很多，这里我们以新建一个工程的方式，去完成我们的需求，
 
-1. 创建工程：
+#### 1. 创建工程：
 
-    1. 使用AndroidStudio新建一个工程即可，
-    1. 在```src/main```下新建两个文件夹，```groovy、resources```,
+1. 使用AndroidStudio新建一个工程即可，
+1. 在```src/main```下新建两个文件夹，```groovy、resources```,
+
+    PS：这里的名字其实叫什么都可以，之前的```java、res```我们可以直接删除。
+1. 修改```app文件夹下的build.gradle```文件
+
+    ```
+    apply plugin: 'groovy'//使用groovy插件
+    dependencies {
+        implementation gradleApi()//引入gradleApi
+    }
+    sourceSets {
+        main {
+            groovy {
+                srcDir 'src/main/groovy'//指定groovy目录
+            }
+            resources {
+                srcDir 'src/main/resources'//指定resources目录
+            }
+        }
+    }
+    ```
+
+1. 在```groovy```目录中新建```PublishAppPlugin.groovy```文件,实现```Plugin```接口
+
+    ```
+    class PublishAppPlugin implements Plugin<Project> {
+        @Override
+        void apply(Project project) {//入口
+            println "hello plugin"
+        }
+    }
+    ```
+
+1. 在```resources/META-INF/gradle-plugins```目录中新建```com.wangzhi.plugin.publishApp.properties```文件，这个文件名就是别人要使用我们插件时要```apply```的名字，我这里是```com.wangzhi.plugin.publishApp```，在这个文件中写入以下代码：
+
+    ```
+    implementation-class=com.wangzhi.plugin.publishApp.PublishAppPlugin
+    //后面的值就是我们上一步新建的文件路径，这里的路径是没有限制的
+    ```
+
+1. 最后我们的目录变成了这样
+
+![](./images/1542968337409.jpg)
+
+#### 2. 接收必要参数
+
+1. 根据我们的需求，我们需要以下参数。
+    1. 360加固包的路径
+    1. 签名文件的路径、密码信息
+    1. 渠道文件的路径
+    1. 文件输出路径
+1. 定义扩展信息，新建```PublishAppInfoExtension.groovy```文件，根据上面的信息，定义相关参数
+
+    ```
+    class PublishAppInfoExtension {
+        String qihuPath //360加固包（jiagu.jar）的文件路径
+        String keyStorePath //keyStor文件路径
+        String keyStorePass //keyStor密码
+        String keyStoreKeyAlias //keyStoreKeyAlias
+        String keyStoreKeyAliasPass //keyStoreKeyAlias密码
+        String channelPath //渠道文件路径
+        String outputPath //文件夹输出路径
+    }
+    ```
+1. 为目标工程定义扩展：
+
+    ```
+    class PublishAppPlugin implements Plugin<Project> {
+        @Override
+        void apply(Project project) {
+            project.extensions.create("publishAppInfo", PublishAppInfoExtension.class)
+        }
+    }
+    ```
+
+#### 3. 功能实现：
+
+##### 1. 自定义Task
+
+1. 新建```PublishAppTask```继承```DefaultTask```
+
+    ```
+    class PublishAppTask extends DefaultTask{
+        PublishAppTask() {
+            group = "wangzhi"
+            dependsOn "build"
+        }
+        @TaskAction
+        void doAction(){
+            //打包已完成
+        }
+    }
+    ```
+1. 为目标工程定义我们的Task
+
+    ```
+    class PublishAppPlugin implements Plugin<Project> {
+        @Override
+        void apply(Project project) {
+            project.extensions.create("publishAppInfo", PublishAppInfoExtension)
+            project.tasks.create("publishApp", PublishAppTask.class)
+        }
+    }
+    ```
+
+1. ```@TaskAction```是任务执行的方法，会在执行阶段执行，因为我们的任务是依赖于```build```的，所以当我们的任务执行时，打包已经完成了。
     
-       PS：这里的名字其实叫什么都可以，之前的```java、res```我们可以直接删除。
-    1. 修改```app文件夹下的build.gradle```文件
+##### 2. 加固我们的应用
 
-        ```
-        apply plugin: 'groovy'//使用groovy插件
-        dependencies {
-            implementation gradleApi()//引入gradleApi
+这里参考360加固的命令行加固相关文档即可，下面我们来看一下代码。
+
+```
+class PublishAppTask extends DefaultTask {
+
+    PublishAppTask() {
+        group = "wangzhi"
+        dependsOn "build"
+    }
+
+    @TaskAction
+    void doAction() {
+        //打包已完成
+        def oldApkPath = "${project.getBuildDir()}/outputs/apk/release/app-release.apk"
+
+        //获取参数
+        def qihuPath = project.extensions.publishAppInfo.qihuPath
+        def keyStorePath = project.extensions.publishAppInfo.keyStorePath
+        def keyStorePass = project.extensions.publishAppInfo.keyStorePass
+        def keyStoreKeyAlias = project.extensions.publishAppInfo.keyStoreKeyAlias
+        def keyStoreKeyAliasPass = project.extensions.publishAppInfo.keyStoreKeyAliasPass
+        def apkOutputDir = project.extensions.publishAppInfo.outputPath
+        //360加固-登录
+        execCmd("java -jar ${qihuPath} -login userName pass")
+        //360加固-签名信息配置
+        execCmd("java -jar ${qihuPath}  -importsign ${keyStorePath} ${keyStorePass} ${keyStoreKeyAlias} ${keyStoreKeyAliasPass}")
+        //360加固-渠道信息配置
+        execCmd("java -jar ${qihuPath} -importmulpkg ${project.extensions.publishAppInfo.channelPath}")
+        //360加固-开始加固
+        execCmd("java -jar ${qihuPath} -jiagu ${oldApkPath} ${apkOutputDir} -autosign  -automulpkg")
+        println "加固完成"
+    }
+
+    void execCmd(cmd) {
+        project.exec {
+            executable 'bash'
+            args '-c', cmd
         }
-        sourceSets {
-            main {
-                groovy {
-                    srcDir 'src/main/groovy'//指定groovy目录
-                }
-                resources {
-                    srcDir 'src/main/resources'//指定resources目录
-                }
-            }
-        }
-        ```
+    }
+}
+```
 
-    1. 在```groovy```目录中新建```PublishAppPlugin.groovy```文件,实现```Plugin```接口
-
-        ```
-        class PublishAppPlugin implements Plugin<Project> {
-            @Override
-            void apply(Project project) {//入口
-                println "hello plugin"
-            }
-        }
-        ```
-
-    1. 在```resources/META-INF/gradle-plugins```目录中新建```com.wangzhi.plugin.publishApp.properties```文件，这个文件名就是别人要使用我们插件时要```apply```的名字，我这里是```com.wangzhi.plugin.publishApp```，在这个文件中写入以下代码：
-
-        ```
-        implementation-class=com.wangzhi.plugin.publishApp.PublishAppPlugin
-        //后面的值就是我们上一步新建的文件路径，这里的路径是没有限制的
-        ```
-
-    1. 最后我们的目录变成了这样
-
-    ![](./images/1542968337409.jpg)
-
-1. 接收必要参数
-
-    1. 根据我们的需求，我们需要以下参数。
-        1. 360加固包的路径
-        1. 签名文件的路径、密码信息
-        1. 渠道文件的路径
-        1. 文件输出路径
-    1. 定义扩展信息，新建```PublishAppInfoExtension.groovy```文件，根据上面的信息，定义相关参数
-
-        ```
-        class PublishAppInfoExtension {
-            String qihuPath //360加固包（jiagu.jar）的文件路径
-            String keyStorePath //keyStor文件路径
-            String keyStorePass //keyStor密码
-            String keyStoreKeyAlias //keyStoreKeyAlias
-            String keyStoreKeyAliasPass //keyStoreKeyAlias密码
-            String channelPath //渠道文件路径
-            String outputPath //文件夹输出路径
-        }
-        ```
-    1. 为目标工程定义扩展：
-
-        ```
-        class PublishAppPlugin implements Plugin<Project> {
-            @Override
-            void apply(Project project) {
-                project.extensions.create("publishAppInfo", PublishAppInfoExtension.class)
-            }
-        }
-        ```
-
-1. 功能实现：
-
-    1. 自定义Task
-
-        1. 新建```PublishAppTask```继承```DefaultTask```
-
-            ```
-            class PublishAppTask extends DefaultTask{
-                PublishAppTask() {
-                    group = "wangzhi"
-                    dependsOn "build"
-                }
-                @TaskAction
-                void doAction(){
-                    //打包已完成
-                }
-            }
-            ```
-        1. 为目标工程定义我们的Task
-
-            ```
-            class PublishAppPlugin implements Plugin<Project> {
-                @Override
-                void apply(Project project) {
-                    project.extensions.create("publishAppInfo", PublishAppInfoExtension)
-                    project.tasks.create("publishApp", PublishAppTask.class)
-                }
-            }
-            ```
-
-        1. ```@TaskAction```是任务执行的方法，会在执行阶段执行，因为我们的任务是依赖于```build```的，所以当我们的任务执行时，打包已经完成了。
-        
-    1. 加固我们的应用
-
-        这里参考360加固的命令行加固相关文档即可，下面我们来看一下代码。
-
-        ```
-        class PublishAppTask extends DefaultTask {
-
-            PublishAppTask() {
-                group = "wangzhi"
-                dependsOn "build"
-            }
-
-            @TaskAction
-            void doAction() {
-                //打包已完成
-                def oldApkPath = "${project.getBuildDir()}/outputs/apk/release/app-release.apk"
-
-                //获取参数
-                def qihuPath = project.extensions.publishAppInfo.qihuPath
-                def keyStorePath = project.extensions.publishAppInfo.keyStorePath
-                def keyStorePass = project.extensions.publishAppInfo.keyStorePass
-                def keyStoreKeyAlias = project.extensions.publishAppInfo.keyStoreKeyAlias
-                def keyStoreKeyAliasPass = project.extensions.publishAppInfo.keyStoreKeyAliasPass
-                def apkOutputDir = project.extensions.publishAppInfo.outputPath
-                //360加固-登录
-                execCmd("java -jar ${qihuPath} -login userName pass")
-                //360加固-签名信息配置
-                execCmd("java -jar ${qihuPath}  -importsign ${keyStorePath} ${keyStorePass} ${keyStoreKeyAlias} ${keyStoreKeyAliasPass}")
-                //360加固-渠道信息配置
-                execCmd("java -jar ${qihuPath} -importmulpkg ${project.extensions.publishAppInfo.channelPath}")
-                //360加固-开始加固
-                execCmd("java -jar ${qihuPath} -jiagu ${oldApkPath} ${apkOutputDir} -autosign  -automulpkg")
-                println "加固完成"
-            }
-
-            void execCmd(cmd) {
-                project.exec {
-                    executable 'bash'
-                    args '-c', cmd
-                }
-            }
-        }
-        ```
-
-4. 发布我们的插件
+#### 4.发布我们的插件
 
 1. 发布到本地maven
 
@@ -574,7 +575,7 @@ task myTask {
         }
         ```
 
-    2：执行发布任务
+    2. 执行发布任务
     
     ![](./images/1543200022578.jpg)
 
