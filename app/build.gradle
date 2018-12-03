@@ -54,8 +54,8 @@ uploadArchives {
 version = myVersion              //配置插件的版本号
 group = myGroupId  //插件的群组，插件的classpath会用到
 pluginBundle {
-    website = 'http://www.gradle.org/'
-    vcsUrl = 'https://github.com/gradle/gradle'
+    website = 'https://github.com/wangzhizy/PublishAppPlugin'
+    vcsUrl = 'https://github.com/wangzhizy/PublishAppPlugin'
     description = myDescription  //插件描述
     tags = mytags //插件的tag。可以通过这个在插件门户上搜索
 
