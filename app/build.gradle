@@ -3,7 +3,7 @@ apply plugin: 'maven'
 apply plugin: "com.gradle.plugin-publish"
 def myGroupId = "com.wangzhi.plugin"
 def myArtifactId = "publishApp"
-def myVersion = "1.0.1"
+def myVersion = "1.0.2"
 def myApplyId = "com.wangzhi.plugin.publishApp"
 def myDescription = "一键发布应用"
 def myDisplayName = 'PublishApp plugin'

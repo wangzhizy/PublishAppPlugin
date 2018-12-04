@@ -42,10 +42,6 @@ class PublishAppInfoExtension {
      * 版本号
      */
     String projectVersion
-    /**
-     * apkName
-     */
-    String apkName
 
     PublishAppInfoExtension() {
 
